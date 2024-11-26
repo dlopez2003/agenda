@@ -34,139 +34,88 @@ class BaseModel:
     
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    class Menu:
+
+
+
+
+
+class Evento(BaseModel):
+    def crear(self, contacto_id, categoria_id, fecha, descripcion):
+        self.execute(
+            "INSERT INTO eventos (contacto_id, categoria_id, fecha, descripcion) VALUES (%s, %s, %s, %s)",
+            (contacto_id, categoria_id, fecha, descripcion),
+        )
+        print("Evento creado con éxito.")
+
+    def leer(self):
+        eventos = self.execute(
+            """
+            SELECT e.id, e.fecha, e.descripcion, c.nombre AS contacto, cat.nombre AS categoria
+            FROM eventos e
+            LEFT JOIN contactos c ON e.contacto_id = c.id
+            LEFT JOIN categorias cat ON e.categoria_id = cat.id
+            ORDER BY e.id DESC
+            """,
+            fetch=True,
+        )
+        if eventos:
+            print("\n--- Eventos (de más reciente a más antiguo) ---")
+            for evento in eventos:
+                print(f"ID: {evento[0]}, Fecha: {evento[1]}, Descripción: {evento[2]}, Contacto: {evento[3]}, Categoría: {evento[4]}")
+        else:
+            print("No hay eventos registrados.")
+
+    def actualizar(self, evento_id, contacto_id, categoria_id, fecha, descripcion):
+        self.execute(
+            """
+            UPDATE eventos
+            SET contacto_id = %s, categoria_id = %s, fecha = %s, descripcion = %s
+            WHERE id = %s
+            """,
+            (contacto_id, categoria_id, fecha, descripcion, evento_id),
+        )
+        print(f"Evento con ID {evento_id} actualizado con éxito.")
+
+    def eliminar(self, evento_id):
+        self.execute("DELETE FROM eventos WHERE id = %s", (evento_id,))
+        print(f"Evento con ID {evento_id} eliminado con éxito.")
+
+
+class Nota(BaseModel):
+    def crear(self, titulo, contenido):
+        fecha_creacion = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.execute(
+            "INSERT INTO notas (titulo, contenido, fecha_creacion) VALUES (%s, %s, %s)",
+            (titulo, contenido, fecha_creacion),
+        )
+        print(f"Nota '{titulo}' creada con éxito.")
+
+    def leer(self):
+        notas = self.execute("SELECT * FROM notas ORDER BY id DESC", fetch=True)
+        if notas:
+            print("\n--- Notas (de más reciente a más antiguo) ---")
+            for nota in notas:
+                print(f"ID: {nota[0]}, Título: {nota[1]}, Contenido: {nota[2]}, Fecha: {nota[3]}")
+        else:
+            print("No hay notas registradas.")
+
+    def actualizar(self, nota_id, titulo, contenido):
+        self.execute(
+            """
+            UPDATE notas
+            SET titulo = %s, contenido = %s
+            WHERE id = %s
+            """,
+            (titulo, contenido, nota_id),
+        )
+        print(f"Nota con ID {nota_id} actualizada con éxito.")
+
+    def eliminar(self, nota_id):
+        self.execute("DELETE FROM notas WHERE id = %s", (nota_id,))
+        print(f"Nota con ID {nota_id} eliminada con éxito.")
+ 
+    
+class Menu:
     def _init_(self):
         self.db_manager = DatabaseManager()
         self.models = {
@@ -211,5 +160,5 @@ class BaseModel:
             elif subopcion == "6":
                 break
 
-if _name_ == "_main_":
+if __name__ == "_main_":
     Menu().mostrar_menu()
